@@ -1,0 +1,7 @@
+{
+  "name": "markdownlint",
+  "engineVersion": "v0.18.4",
+  "sdk": {
+    "source": "go"
+  }
+}
