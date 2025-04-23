@@ -1,0 +1,45 @@
+[
+	{
+		"customType": "regex",
+		"description": "Update images in GitLab CI files with the IMAGE_REPO_BASE prefix",
+		"fileMatch": [
+		"\\.gitlab-ci\\.ya?ml$"
+		],
+		"matchStrings": [
+		"['\"]?\\$\\{?IMAGE_REPO_BASE\\}?(?<registryUrl>[^/]+)/(?<depName>.*):(?<currentValue>.*)['\"]?"
+		],
+		"datasourceTemplate": "docker",
+		"registryUrlTemplate": "https://{{{registryUrl}}}"
+	},
+	{
+		"customType": "regex",
+		"description": "Update index.docker.io images in GitLab CI files with the IMAGE_REPO_BASE prefix",
+		"fileMatch": [
+		"\\.gitlab-ci\\.ya?ml$"
+		],
+		"matchStrings": [
+		"['\"]?\\$\\{?IMAGE_REPO_BASE\\}?index\\.docker\\.io/(?<depName>.*):(?<currentValue>.*)['\"]?"
+		],
+		"datasourceTemplate": "docker"
+	},
+	{
+		"customType": "regex",
+		"description": "Update *_VERSION fields in YAML files",
+		"fileMatch": [
+		"\\.ya?ml$"
+		],
+		"matchStrings": [
+		"# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
+		]
+	},
+	{
+		"customType": "regex",
+		"description": "Update *_VERSION variables in Makefiles",
+		"fileMatch": [
+		"(^|/)(GNUm|m|M)akefile$"
+		],
+		"matchStrings": [
+		"# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\??=(?<currentValue>.+?)\\s"
+		]
+	}
+]
