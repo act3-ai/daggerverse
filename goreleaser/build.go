@@ -54,7 +54,7 @@ func (b *Build) Platform(
 // Build for all platforms, defined in .goreleaser.yaml.
 //
 // e.g. `goreleaser build`.
-func (b *Build) BuildPlatforms() *dagger.Container {
+func (b *Build) All() *dagger.Container {
 	return b.gr.Ctr.WithExec(b.flags)
 }
 
