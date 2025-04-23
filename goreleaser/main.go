@@ -51,11 +51,11 @@ func New(
 	// inherit from host, overriden by WithEnvVariable
 	val, ok := os.LookupEnv(envGOMAXPROCS)
 	if ok {
-		gr = gr.WithEnvVariable(envGOMAXPROCS, val)
+		gr = gr.WithEnvVariable(envGOMAXPROCS, val, false)
 	}
 	val, ok = os.LookupEnv(envGOMEMLIMIT)
 	if ok {
-		gr = gr.WithEnvVariable(envGOMEMLIMIT, val)
+		gr = gr.WithEnvVariable(envGOMEMLIMIT, val, false)
 	}
 
 	return gr
@@ -64,15 +64,36 @@ func New(
 // WithEnvVariable adds an environment variable to the goreleaser container.
 //
 // This is useful for reusability and readability by not breaking the goreleaser calling chain.
-func (gr *Goreleaser) WithEnvVariable(name, value string, opts ...dagger.ContainerWithEnvVariableOpts) *Goreleaser {
-	gr.Ctr = gr.Ctr.WithEnvVariable(name, value, opts...)
+func (gr *Goreleaser) WithEnvVariable(
+	// The name of the environment variable (e.g., "HOST").
+	name string,
+	// The value of the environment variable (e.g., "localhost").
+	value string,
+	// Replace `${VAR}` or $VAR in the value according to the current environment
+	// variables defined in the container (e.g., "/opt/bin:$PATH").
+	//
+	// +optional
+	expand bool,
+) *Goreleaser {
+	gr.Ctr = gr.Ctr.WithEnvVariable(
+		name,
+		value,
+		dagger.ContainerWithEnvVariableOpts{
+			Expand: expand,
+		},
+	)
 	return gr
 }
 
 // WithSecretVariable adds an env variable containing a secret to the goreleaser container.
 //
 // This is useful for reusability and readability by not breaking the goreleaser calling chain.
-func (gr *Goreleaser) WithSecretVariable(name string, secret *dagger.Secret) *Goreleaser {
+func (gr *Goreleaser) WithSecretVariable(
+	// The name of the environment variable containing a secret (e.g., "PASSWORD").
+	name string,
+	// The value of the environment variable containing a secret.
+	secret *dagger.Secret,
+) *Goreleaser {
 	gr.Ctr = gr.Ctr.WithSecretVariable(name, secret)
 	return gr
 }
