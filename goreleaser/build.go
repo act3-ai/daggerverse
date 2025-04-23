@@ -2,6 +2,7 @@ package main
 
 import (
 	"dagger/goreleaser/internal/dagger"
+	"strconv"
 	"strings"
 
 	"github.com/containerd/platforms"
@@ -99,6 +100,28 @@ func (b *Build) WithClean() *Build {
 	return b
 }
 
+// Skip options: before, pre-hooks, post-hooks, validate.
+//
+// e.g. `goreleaser build --skip before,pre-hooks,...`.
+func (b *Build) WithOptionSkip(
+	// Skip options
+	skip []string,
+) *Build {
+	b.flags = append(b.flags, "--skip", strings.Join(skip, ","))
+	return b
+}
+
+// Tasks to run concurrently (default: number of CPUs).
+//
+// e.g. `goreleaser build --parallelism <n>`
+func (b *Build) WithParallelism(
+	// concurrent tasks
+	n int,
+) *Build {
+	b.flags = append(b.flags, "parallelism", strconv.Itoa(n))
+	return b
+}
+
 // TODO: ensure this builds the flag correctly
 // Builds only the specified build ids, as defined in a goreleaser configuration file.
 //
@@ -111,14 +134,3 @@ func (b *Build) WithClean() *Build {
 // 	b.flags = append(b.flags, ids...)
 // 	return b
 // }
-
-// Skip options: before, pre-hooks, post-hooks, validate.
-//
-// e.g. `goreleaser build --skip before,pre-hooks,...`.
-func (b *Build) WithOptionSkip(
-	// Skip options
-	skip []string,
-) *Build {
-	b.flags = append(b.flags, "--skip", strings.Join(skip, ","))
-	return b
-}
