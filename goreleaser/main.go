@@ -27,7 +27,7 @@ const (
 // Goreleaser represents the `goreleaser` command.
 type Goreleaser struct {
 	// +private
-	Container *dagger.Container
+	Ctr *dagger.Container
 	// +private
 	RegistryConfig *dagger.RegistryConfig
 }
@@ -43,7 +43,7 @@ func New(
 ) *Goreleaser {
 	gr := &Goreleaser{}
 
-	gr.Container = dag.Container().
+	gr.Ctr = dag.Container().
 		From(fmt.Sprintf("%s:%s", imageGoReleaser, version)).
 		WithWorkdir("/work/src").
 		WithMountedDirectory("/work/src", Source)
@@ -65,7 +65,7 @@ func New(
 //
 // This is useful for reusability and readability by not breaking the goreleaser calling chain.
 func (gr *Goreleaser) WithEnvVariable(name, value string, opts ...dagger.ContainerWithEnvVariableOpts) *Goreleaser {
-	gr.Container = gr.Container.WithEnvVariable(name, value, opts...)
+	gr.Ctr = gr.Ctr.WithEnvVariable(name, value, opts...)
 	return gr
 }
 
@@ -73,7 +73,7 @@ func (gr *Goreleaser) WithEnvVariable(name, value string, opts ...dagger.Contain
 //
 // This is useful for reusability and readability by not breaking the goreleaser calling chain.
 func (gr *Goreleaser) WithSecretVariable(name string, secret *dagger.Secret) *Goreleaser {
-	gr.Container = gr.Container.WithSecretVariable(name, secret)
+	gr.Ctr = gr.Ctr.WithSecretVariable(name, secret)
 	return gr
 }
 
@@ -82,7 +82,7 @@ func (gr *Goreleaser) WithNetrc(
 	// NETRC credentials
 	netrc *dagger.Secret,
 ) *Goreleaser {
-	gr.Container = gr.Container.WithMountedSecret("/root/.netrc", netrc)
+	gr.Ctr = gr.Ctr.WithMountedSecret("/root/.netrc", netrc)
 	return gr
 }
 
@@ -106,5 +106,10 @@ func (gr *Goreleaser) Run(
 	// arguments and flags, without `goreleaser`.
 	args []string,
 ) *dagger.Container {
-	return gr.Container.WithExec(append([]string{"goreleaser"}, args...))
+	return gr.Ctr.WithExec(append([]string{"goreleaser"}, args...))
+}
+
+// Fetch the goreleaser container in its current state. All modifications are preserved, e.g. environment variables.
+func (gr *Goreleaser) Container() *dagger.Container {
+	return gr.Ctr
 }

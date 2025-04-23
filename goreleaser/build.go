@@ -38,7 +38,7 @@ func (b *Build) Platform(
 	p := platforms.MustParse(string(platform))
 	b.flags = append(b.flags, "--single-target")
 
-	return b.gr.Container.
+	return b.gr.Ctr.
 		WithEnvVariable(envGOOS, p.OS).
 		WithEnvVariable(envGOARCH, p.Architecture).
 		With(func(c *dagger.Container) *dagger.Container {
@@ -55,13 +55,13 @@ func (b *Build) Platform(
 //
 // e.g. `goreleaser build`.
 func (b *Build) BuildPlatforms() *dagger.Container {
-	return b.gr.Container.WithExec(b.flags)
+	return b.gr.Ctr.WithExec(b.flags)
 }
 
 // WithConfig loads a .goreleaser.yaml configuration file.
 func (b *Build) WithConfig(config *dagger.File) *Build {
 	cfgPath := "/work/.goreleaser.yaml"
-	b.gr.Container = b.gr.Container.WithMountedFile(cfgPath, config)
+	b.gr.Ctr = b.gr.Ctr.WithMountedFile(cfgPath, config)
 	b.flags = append(b.flags, "--config", cfgPath)
 	return b
 }
