@@ -3,5 +3,12 @@
   "engineVersion": "v0.18.4",
   "sdk": {
     "source": "go"
-  }
+  },
+  "dependencies": [
+    {
+      "name": "registry-config",
+      "source": "github.com/sagikazarmark/daggerverse/registry-config",
+      "pin": "ceffda4aebd349a24fc00e591b4ed9b801535b65"
+    }
+  ]
 }
