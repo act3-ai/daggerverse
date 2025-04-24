@@ -126,8 +126,6 @@ func (gv *Govulncheck) WithShow(
 	return gv
 }
 
-func (gv *Govulncheck) Run()
-
 func defaultContainer(version string) *dagger.Container {
 	return dag.Go().
 		Exec([]string{"go", "install", fmt.Sprintf("%s@%s", goVulnCheck, version)})
