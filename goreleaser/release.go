@@ -85,7 +85,7 @@ func (r *Release) WithNotes(
 	notes *dagger.File,
 ) *Release {
 	notesPath := "/work/notes.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(notesPath, notes)
+	r.gr.Container = r.gr.Container.WithMountedFile(notesPath, notes)
 	r.flags = append(r.flags, "--release-notes", notesPath)
 	return r
 }
@@ -98,7 +98,7 @@ func (r *Release) WithNotesTmpl(
 	notesTmpl *dagger.File,
 ) *Release {
 	notesPath := "/work/notes-tmpl.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(notesPath, notesTmpl)
+	r.gr.Container = r.gr.Container.WithMountedFile(notesPath, notesTmpl)
 	r.flags = append(r.flags, "--release-notes-tmpl", notesPath)
 	return r
 }
@@ -108,7 +108,7 @@ func (r *Release) WithNotesTmpl(
 // e.g. `goreleaser release --release-header <header>`.
 func (r *Release) WithNotesHeader(header *dagger.File) *Release {
 	headerPath := "/work/header.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(headerPath, header)
+	r.gr.Container = r.gr.Container.WithMountedFile(headerPath, header)
 	r.flags = append(r.flags, "--release-header", headerPath)
 	return r
 }
@@ -121,7 +121,7 @@ func (r *Release) WithNotesHeaderTmpl(
 	headerTmpl *dagger.File,
 ) *Release {
 	headerPath := "/work/header-tmpl.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(headerPath, headerTmpl)
+	r.gr.Container = r.gr.Container.WithMountedFile(headerPath, headerTmpl)
 	r.flags = append(r.flags, "release-header-tmpl", headerPath)
 	return r
 }
@@ -131,7 +131,7 @@ func (r *Release) WithNotesHeaderTmpl(
 // e.g. `goreleaser release --release-footer <footer>`.
 func (r *Release) WithNotesFooter(footer *dagger.File) *Release {
 	footerPath := "/work/header.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(footerPath, footer)
+	r.gr.Container = r.gr.Container.WithMountedFile(footerPath, footer)
 	r.flags = append(r.flags, "--release-footer", footerPath)
 	return r
 }
@@ -144,7 +144,7 @@ func (r *Release) WithNotesFooterTmpl(
 	footerTmpl *dagger.File,
 ) *Release {
 	footerPath := "/work/footer-tmpl.md"
-	r.gr.Ctr = r.gr.Ctr.WithMountedFile(footerPath, footerTmpl)
+	r.gr.Container = r.gr.Container.WithMountedFile(footerPath, footerTmpl)
 	r.flags = append(r.flags, "--release-footer-tmpl", footerPath)
 	return r
 }

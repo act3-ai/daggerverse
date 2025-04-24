@@ -26,8 +26,8 @@ const (
 
 // Goreleaser represents the `goreleaser` command.
 type Goreleaser struct {
-	// +private
-	Ctr *dagger.Container
+	Container *dagger.Container
+
 	// +private
 	RegistryConfig *dagger.RegistryConfig
 }
@@ -41,24 +41,10 @@ func New(
 	// +default="latest"
 	version string,
 ) *Goreleaser {
-	gr := &Goreleaser{}
-
-	gr.Ctr = dag.Container().
-		From(fmt.Sprintf("%s:%s", imageGoReleaser, version)).
-		WithWorkdir("/work/src").
-		WithMountedDirectory("/work/src", Source)
-
-	// inherit from host, overriden by WithEnvVariable
-	val, ok := os.LookupEnv(envGOMAXPROCS)
-	if ok {
-		gr = gr.WithEnvVariable(envGOMAXPROCS, val, false)
+	return &Goreleaser{
+		Container:      defaultContainer(Source, version),
+		RegistryConfig: dag.RegistryConfig(),
 	}
-	val, ok = os.LookupEnv(envGOMEMLIMIT)
-	if ok {
-		gr = gr.WithEnvVariable(envGOMEMLIMIT, val, false)
-	}
-
-	return gr
 }
 
 // WithEnvVariable adds an environment variable to the goreleaser container.
@@ -75,7 +61,7 @@ func (gr *Goreleaser) WithEnvVariable(
 	// +optional
 	expand bool,
 ) *Goreleaser {
-	gr.Ctr = gr.Ctr.WithEnvVariable(
+	gr.Container = gr.Container.WithEnvVariable(
 		name,
 		value,
 		dagger.ContainerWithEnvVariableOpts{
@@ -94,7 +80,7 @@ func (gr *Goreleaser) WithSecretVariable(
 	// The value of the environment variable containing a secret.
 	secret *dagger.Secret,
 ) *Goreleaser {
-	gr.Ctr = gr.Ctr.WithSecretVariable(name, secret)
+	gr.Container = gr.Container.WithSecretVariable(name, secret)
 	return gr
 }
 
@@ -103,7 +89,7 @@ func (gr *Goreleaser) WithNetrc(
 	// NETRC credentials
 	netrc *dagger.Secret,
 ) *Goreleaser {
-	gr.Ctr = gr.Ctr.WithMountedSecret("/root/.netrc", netrc)
+	gr.Container = gr.Container.WithMountedSecret("/root/.netrc", netrc)
 	return gr
 }
 
@@ -127,10 +113,29 @@ func (gr *Goreleaser) Run(
 	// arguments and flags, without `goreleaser`.
 	args []string,
 ) *dagger.Container {
-	return gr.Ctr.WithExec(append([]string{"goreleaser"}, args...))
+	return gr.Container.WithExec(append([]string{"goreleaser"}, args...))
 }
 
-// Fetch the goreleaser container in its current state. All modifications are preserved, e.g. environment variables.
-func (gr *Goreleaser) Container() *dagger.Container {
-	return gr.Ctr
+// defaultContainer constructs a minimal container containing a source git repository.
+func defaultContainer(source *dagger.Directory, version string) *dagger.Container {
+	return dag.Container().
+		From(fmt.Sprintf("%s:%s", imageGoReleaser, version)).
+		WithWorkdir("/work/src").
+		WithMountedDirectory("/work/src", source).
+		With(func(r *dagger.Container) *dagger.Container {
+			// inherit from host, overriden by WithEnvVariable
+			val, ok := os.LookupEnv(envGOMAXPROCS)
+			if ok {
+				r = r.WithEnvVariable(envGOMAXPROCS, val)
+			}
+			return r
+		}).
+		With(func(r *dagger.Container) *dagger.Container {
+			// inherit from host, overriden by WithEnvVariable
+			val, ok := os.LookupEnv(envGOMEMLIMIT)
+			if ok {
+				r = r.WithEnvVariable(envGOMEMLIMIT, val)
+			}
+			return r
+		})
 }
