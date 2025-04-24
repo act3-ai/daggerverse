@@ -91,6 +91,9 @@ func (gc *GitCliff) WithNetrc(
 	return gc
 }
 
+// Sets the configuration file.
+//
+// e.g. `git-cliff --config <config>`.
 func (gc *GitCliff) WithConfig(
 	// git-cliff configuration file, i.e. cliff.toml.
 	config *dagger.File,
