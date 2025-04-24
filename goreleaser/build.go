@@ -11,18 +11,18 @@ import (
 // Release represents the `goreleaser build` command.
 type Build struct {
 	// +private
-	gr *Goreleaser
+	Goreleaser *Goreleaser
 
-	// build flags
+	// build Flags
 	// +private
-	flags []string
+	Flags []string
 }
 
 // Build represents the `goreleaser build` command.
 func (gr *Goreleaser) Build() *Build {
 	return &Build{
-		gr:    gr,
-		flags: []string{"goreleaser", "build"},
+		Goreleaser: gr,
+		Flags:      []string{"goreleaser", "build"},
 	}
 }
 
@@ -36,9 +36,9 @@ func (b *Build) Platform(
 	platform dagger.Platform,
 ) *dagger.Container {
 	p := platforms.MustParse(string(platform))
-	b.flags = append(b.flags, "--single-target")
+	b.Flags = append(b.Flags, "--single-target")
 
-	return b.gr.Container.
+	return b.Goreleaser.Container.
 		WithEnvVariable(envGOOS, p.OS).
 		WithEnvVariable(envGOARCH, p.Architecture).
 		With(func(c *dagger.Container) *dagger.Container {
@@ -48,21 +48,21 @@ func (b *Build) Platform(
 
 			return c
 		}).
-		WithExec(b.flags)
+		WithExec(b.Flags)
 }
 
 // Build for all platforms, defined in .goreleaser.yaml.
 //
 // e.g. `goreleaser build`.
 func (b *Build) All() *dagger.Container {
-	return b.gr.Container.WithExec(b.flags)
+	return b.Goreleaser.Container.WithExec(b.Flags)
 }
 
 // WithConfig loads a .goreleaser.yaml configuration file.
 func (b *Build) WithConfig(config *dagger.File) *Build {
 	cfgPath := "/work/.goreleaser.yaml"
-	b.gr.Container = b.gr.Container.WithMountedFile(cfgPath, config)
-	b.flags = append(b.flags, "--config", cfgPath)
+	b.Goreleaser.Container = b.Goreleaser.Container.WithMountedFile(cfgPath, config)
+	b.Flags = append(b.Flags, "--config", cfgPath)
 	return b
 }
 
@@ -70,7 +70,7 @@ func (b *Build) WithConfig(config *dagger.File) *Build {
 //
 // e.g. `goreleaser build --snapshot`.
 func (b *Build) WithSnapshot() *Build {
-	b.flags = append(b.flags, "--snapshot")
+	b.Flags = append(b.Flags, "--snapshot")
 	return b
 }
 
@@ -78,7 +78,7 @@ func (b *Build) WithSnapshot() *Build {
 //
 // e.g. `goreleaser build --auto-snapshot`.
 func (b *Build) WithAutoSnapshot() *Build {
-	b.flags = append(b.flags, "--auto-snapshot")
+	b.Flags = append(b.Flags, "--auto-snapshot")
 	return b
 }
 
@@ -86,7 +86,7 @@ func (b *Build) WithAutoSnapshot() *Build {
 //
 // e.g. `goreleaser build --clean`.
 func (b *Build) WithClean() *Build {
-	b.flags = append(b.flags, "--clean")
+	b.Flags = append(b.Flags, "--clean")
 	return b
 }
 
@@ -97,7 +97,7 @@ func (b *Build) WithTimeout(
 	// Timeout duration, e.g. 10m, 10m30s. Default is 30m.
 	duration string,
 ) *Build {
-	b.flags = append(b.flags, "--timeout", duration)
+	b.Flags = append(b.Flags, "--timeout", duration)
 	return b
 }
 
@@ -108,7 +108,7 @@ func (b *Build) WithOptionSkip(
 	// Skip options
 	skip []string,
 ) *Build {
-	b.flags = append(b.flags, "--skip", strings.Join(skip, ","))
+	b.Flags = append(b.Flags, "--skip", strings.Join(skip, ","))
 	return b
 }
 
@@ -119,7 +119,7 @@ func (b *Build) WithParallelism(
 	// concurrent tasks
 	n int,
 ) *Build {
-	b.flags = append(b.flags, "parallelism", strconv.Itoa(n))
+	b.Flags = append(b.Flags, "parallelism", strconv.Itoa(n))
 	return b
 }
 
