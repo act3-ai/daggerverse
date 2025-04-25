@@ -11,6 +11,8 @@ import (
 
 const (
 	goVulnCheck = "golang.org/x/vuln/cmd/govulncheck" // default: "latest"
+
+	imageGo = "golang:latest" // github.com/sagikazarmark/daggerverse/go convention
 )
 
 type Govulncheck struct {
@@ -40,6 +42,15 @@ func New(
 		Container: Container,
 		Flags:     []string{"govulncheck"},
 	}
+}
+
+// Mount netrc credentials for a private git repository.
+func (gv *Govulncheck) WithNetrc(
+	// NETRC credentials
+	netrc *dagger.Secret,
+) *Govulncheck {
+	gv.Container = gv.Container.WithMountedSecret("/root/.netrc", netrc)
+	return gv
 }
 
 // Run govulncheck with a source directory.
@@ -129,5 +140,4 @@ func (gv *Govulncheck) WithShow(
 func defaultContainer(version string) *dagger.Container {
 	return dag.Go().
 		Exec([]string{"go", "install", fmt.Sprintf("%s@%s", goVulnCheck, version)})
-
 }
