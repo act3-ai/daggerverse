@@ -91,14 +91,16 @@ func (gc *GitCliff) WithConfig(
 	return gc
 }
 
-// Run git-cliff.
+// Run git-cliff with all options previously provided.
 //
-// Run is a "catch-all" in case functions are not implemented.
+// Run MAY be used as a "catch-all" in case functions are not implemented.
 func (gc *GitCliff) Run(
 	// arguments and flags, without `git-cliff`
+	// +optional
 	args []string,
 ) *dagger.Container {
-	return gc.Container.WithExec(append([]string{"git-cliff"}, args...))
+	gc.Flags = append(gc.Flags, args...)
+	return gc.Container.WithExec(gc.Flags)
 }
 
 // Sets the GitHub API token.
