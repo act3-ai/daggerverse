@@ -50,6 +50,7 @@ func (b *Build) Platform(
 
 			return c
 		}).
+		WithMountedCache("goreleaser-cache-platform", dag.CacheVolume("goreleaser-cache-platform")).
 		WithExec(b.Flags).
 		File(outFile)
 }
@@ -58,7 +59,8 @@ func (b *Build) Platform(
 //
 // e.g. `goreleaser build`.
 func (b *Build) All() *dagger.Directory {
-	return b.Goreleaser.Container.WithExec(b.Flags).
+	return b.Goreleaser.Container.WithMountedCache("goreleaser-cache-all", dag.CacheVolume("goreleaser-cache-all")).
+		WithExec(b.Flags).
 		Directory("dist")
 }
 
