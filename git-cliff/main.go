@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"dagger/git-cliff/internal/dagger"
 	"fmt"
 )
@@ -101,6 +102,13 @@ func (gc *GitCliff) Run(
 ) *dagger.Container {
 	gc.Flags = append(gc.Flags, args...)
 	return gc.Container.WithExec(gc.Flags)
+}
+
+// Prints bumped version for unreleased changes.
+func (gc *GitCliff) BumpedVersion(ctx context.Context) (string, error) {
+	gc.Flags = append(gc.Flags, "--bumped-version")
+	return gc.Container.WithExec(gc.Flags).
+		Stdout(ctx)
 }
 
 // Sets the GitHub API token.
