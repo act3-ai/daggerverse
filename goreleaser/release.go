@@ -23,6 +23,18 @@ func (gr *Goreleaser) Release() *Release {
 	}
 }
 
+// Run `goreleaser release` with all options previously provided.
+//
+// Run MAY be used as a "catch-all" in case functions are not implemented.
+func (gr *Release) Run(
+	// arguments and flags, without `git-cliff`
+	// +optional
+	args []string,
+) *dagger.Container {
+	gr.Flags = append(gr.Flags, args...)
+	return gr.Goreleaser.Container.WithExec(gr.Flags)
+}
+
 // Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts.
 //
 // e.g. `goreleaser release --snapshot`.
