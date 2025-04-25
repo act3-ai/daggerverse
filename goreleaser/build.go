@@ -30,13 +30,15 @@ func (gr *Goreleaser) Build() *Build {
 //
 // e.g. `goreleaser build --single-target` with $GOOS, $GOARCH, and $GOARM set appropriately.
 func (b *Build) Platform(
+	// output file name
+	outFile string,
 	// Target platform in "[os]/[platform]/[version]" format (e.g., "darwin/arm64/v7", "windows/amd64", "linux/arm64").
 	// +optional
 	// +default="linux/amd64"
 	platform dagger.Platform,
-) *dagger.Container {
+) *dagger.File {
 	p := platforms.MustParse(string(platform))
-	b.Flags = append(b.Flags, "--single-target")
+	b.Flags = append(b.Flags, "--single-target", "--output", outFile)
 
 	return b.Goreleaser.Container.
 		WithEnvVariable(envGOOS, p.OS).
@@ -48,14 +50,16 @@ func (b *Build) Platform(
 
 			return c
 		}).
-		WithExec(b.Flags)
+		WithExec(b.Flags).
+		File(outFile)
 }
 
 // Build for all platforms, defined in .goreleaser.yaml.
 //
 // e.g. `goreleaser build`.
-func (b *Build) All() *dagger.Container {
-	return b.Goreleaser.Container.WithExec(b.Flags)
+func (b *Build) All() *dagger.Directory {
+	return b.Goreleaser.Container.WithExec(b.Flags).
+		Directory("dist")
 }
 
 // WithConfig loads a .goreleaser.yaml configuration file.
