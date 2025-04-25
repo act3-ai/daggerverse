@@ -15,7 +15,7 @@ import (
 )
 
 // TODO add renovate to this
-const uvImageDefault = "ghcr.io/astral-sh/uv:0.6.9-debian"
+const uvImageDefault = "ghcr.io/astral-sh/uv:0.6.16-debian"
 
 type Python struct {
 	// +private
