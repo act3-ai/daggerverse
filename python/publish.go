@@ -12,11 +12,14 @@ func (python *Python) Publish(ctx context.Context,
 	password *dagger.Secret,
 ) (*dagger.Container, error) {
 
+	emptyDir := dag.Directory()
+
 	c := python.Container().
 		WithEnvVariable("UV_PUBLISH_CHECK_URL", publishUrl+"/simple").
 		WithEnvVariable("UV_PUBLISH_URL", publishUrl).
 		WithEnvVariable("UV_PUBLISH_USERNAME", username).
 		WithSecretVariable("UV_PUBLISH_PASSWORD", password).
+		WithMountedDirectory("/dist", emptyDir).
 		WithExec(
 			[]string{
 				"uv",
