@@ -29,6 +29,9 @@ type Renovate struct {
 	Project string
 
 	// +private
+	EndpointURL string
+
+	// +private
 	Base *dagger.Container
 
 	// +private
@@ -75,6 +78,9 @@ func New(
 	// Gitlab API token to the repo being renovated
 	token *dagger.Secret,
 
+	// Endpoint URL for example https://hostname/api/v4
+	endpointURL string,
+
 	// renovate base image
 	// +optional
 	base *dagger.Container,
@@ -83,9 +89,10 @@ func New(
 		base = dag.Container().From("renovate/renovate:39-full")
 	}
 	return &Renovate{
-		Project: project,
-		Base:    base,
-		Token:   token,
+		Project:     project,
+		Base:        base,
+		Token:       token,
+		EndpointURL: endpointURL,
 	}
 }
 
@@ -176,9 +183,8 @@ func (m *Renovate) getSecrets(ctx context.Context) (*dagger.Secret, error) {
 
 // Run renovate to update dependencies on the remote Gitlab repository
 func (m *Renovate) Update(ctx context.Context) (string, error) {
-
-	const gitAuthorName = "Renovate Bot"
-	const gitAuthorEmail = "buildbot@act3-ace.com"
+	const author = "Renovate Bot"
+	const email = "bot@example.com"
 
 	hostRules, err := m.getHostRules(ctx)
 	if err != nil {
@@ -191,21 +197,20 @@ func (m *Renovate) Update(ctx context.Context) (string, error) {
 	}
 
 	return m.Base.
-		WithEnvVariable("RENOVATE_ENDPOINT", "https://git.act3-ace.com/api/v4").
-		WithSecretVariable("RENOVATE_TOKEN", m.Token).
+		WithEnvVariable("RENOVATE_ENDPOINT", m.EndpointURL).
 		WithEnvVariable("RENOVATE_PLATFORM", "gitlab").
+		WithSecretVariable("RENOVATE_TOKEN", m.Token).
 		WithEnvVariable("RENOVATE_USERNAME", "renovate-bot").
 		WithEnvVariable("RENOVATE_AUTODISCOVER", "false").
 		WithEnvVariable("RENOVATE_GLOBAL_EXTENDS", globalExtends).
 		WithEnvVariable("RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS", `["^.*$"]`).
 		WithSecretVariable("RENOVATE_HOST_RULES", hostRules).
-		// WithSecretVariable("RENOVATE_SECRETS", secrets).
-		WithEnvVariable("GIT_AUTHOR_NAME", "Renovate Bot").
-		WithEnvVariable("GIT_AUTHOR_EMAIL", "buildbot@act3-ace.com").
-		WithEnvVariable("GIT_COMMITTER_NAME", gitAuthorName).
-		WithEnvVariable("GIT_COMMITTER_EMAIL", gitAuthorEmail).
-		WithEnvVariable("RENOVATE_GIT_AUTHOR", fmt.Sprintf("%s <%s>", gitAuthorName, gitAuthorEmail)).
-		WithEnvVariable("RENOVATE_GIT_IGNORED_AUTHORS", gitAuthorEmail).
+		// WithEnvVariable("GIT_AUTHOR_NAME", author).
+		// WithEnvVariable("GIT_AUTHOR_EMAIL", email).
+		// WithEnvVariable("GIT_COMMITTER_NAME", author).
+		// WithEnvVariable("GIT_COMMITTER_EMAIL", email).
+		WithEnvVariable("RENOVATE_GIT_AUTHOR", fmt.Sprintf("%s <%s>", author, email)).
+		// WithEnvVariable("RENOVATE_GIT_IGNORED_AUTHORS", email).
 		WithEnvVariable("RENOVATE_REQUIRE_CONFIG", "optional").
 		WithEnvVariable("RENOVATE_ONBOARDING", "false").
 		WithEnvVariable("RENOVATE_CUSTOM_MANAGERS", customManagers).
