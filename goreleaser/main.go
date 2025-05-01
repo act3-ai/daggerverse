@@ -39,12 +39,24 @@ func New(
 	// Version (image tag) to use as a goreleaser binary source.
 	// +optional
 	// +default="latest"
-	version string,
+	Version string,
+
+	// Disable mounting cache volumes.
+	//
+	// +optional
+	disableCache bool,
 ) *Goreleaser {
-	return &Goreleaser{
-		Container:      defaultContainer(Source, version),
+	gr := &Goreleaser{
+		Container:      defaultContainer(Source, Version),
 		RegistryConfig: dag.RegistryConfig(),
 	}
+
+	if !disableCache {
+		gr = gr.WithGoModuleCache(dag.CacheVolume("go-mod"), nil, "").
+			WithBuildCache(dag.CacheVolume("go-build"), nil, "")
+	}
+
+	return gr
 }
 
 // WithEnvVariable adds an environment variable to the goreleaser container.
@@ -103,6 +115,58 @@ func (gr *Goreleaser) WithRegistryAuth(
 	secret *dagger.Secret,
 ) *Goreleaser {
 	gr.RegistryConfig = gr.RegistryConfig.WithRegistryAuth(address, username, secret)
+	return gr
+}
+
+// Mount a cache volume for Go module cache.
+func (gr *Goreleaser) WithGoModuleCache(
+	cache *dagger.CacheVolume,
+
+	// Identifier of the directory to use as the cache volume's root.
+	//
+	// +optional
+	source *dagger.Directory,
+
+	// Sharing mode of the cache volume.
+	//
+	// +optional
+	sharing dagger.CacheSharingMode,
+) *Goreleaser {
+	gr.Container = gr.Container.WithMountedCache(
+		"/go/pkg/mod",
+		cache,
+		dagger.ContainerWithMountedCacheOpts{
+			Source:  source,
+			Sharing: sharing,
+		},
+	)
+
+	return gr
+}
+
+// Mount a cache volume for Go build cache.
+func (gr *Goreleaser) WithBuildCache(
+	cache *dagger.CacheVolume,
+
+	// Identifier of the directory to use as the cache volume's root.
+	//
+	// +optional
+	source *dagger.Directory,
+
+	// Sharing mode of the cache volume.
+	//
+	// +optional
+	sharing dagger.CacheSharingMode,
+) *Goreleaser {
+	gr.Container = gr.Container.WithMountedCache(
+		"/root/.cache/go-build",
+		cache,
+		dagger.ContainerWithMountedCacheOpts{
+			Source:  source,
+			Sharing: sharing,
+		},
+	)
+
 	return gr
 }
 
