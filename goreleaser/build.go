@@ -50,16 +50,17 @@ func (b *Build) Platform(
 
 			return c
 		}).
-		WithMountedCache("goreleaser-cache-platform", dag.CacheVolume("goreleaser-cache-platform")).
 		WithExec(b.Flags).
 		File(outFile)
 }
 
-// Build for all platforms, defined in .goreleaser.yaml.
+// Build for all platforms, defined in .goreleaser.yaml. Returns the goreleaser 'dist' directory.
 //
 // e.g. `goreleaser build`.
 func (b *Build) All() *dagger.Directory {
-	return b.Goreleaser.Container.WithMountedCache("goreleaser-cache-all", dag.CacheVolume("goreleaser-cache-all")).
+	// TODO: Ideally, we would only return the executables. But that requires parsing the goreleaser
+	// config for the target platforms.
+	return b.Goreleaser.Container.
 		WithExec(b.Flags).
 		Directory("dist")
 }
