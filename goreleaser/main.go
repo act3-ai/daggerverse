@@ -53,7 +53,7 @@ func New(
 
 	if !disableCache {
 		gr = gr.WithGoModuleCache(dag.CacheVolume("go-mod"), nil, "").
-			WithBuildCache(dag.CacheVolume("go-build"), nil, "")
+			WithGoBuildCache(dag.CacheVolume("go-build"), nil, "")
 	}
 
 	return gr
@@ -145,7 +145,7 @@ func (gr *Goreleaser) WithGoModuleCache(
 }
 
 // Mount a cache volume for Go build cache.
-func (gr *Goreleaser) WithBuildCache(
+func (gr *Goreleaser) WithGoBuildCache(
 	cache *dagger.CacheVolume,
 
 	// Identifier of the directory to use as the cache volume's root.
