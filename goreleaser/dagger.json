@@ -7,8 +7,8 @@
   "dependencies": [
     {
       "name": "registry-config",
-      "source": "github.com/sagikazarmark/daggerverse/registry-config",
-      "pin": "ceffda4aebd349a24fc00e591b4ed9b801535b65"
+      "source": "github.com/sagikazarmark/daggerverse/registry-config@registry-config/v0.8.0",
+      "pin": "126b5fbbdad70dbf2a8689600baec2eb78c05ef4"
     }
   ]
 }
