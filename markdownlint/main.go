@@ -17,28 +17,21 @@ type Markdownlint struct {
 }
 
 func New(
+	// Custom container to use as a base container. Must have 'markdownlint-cli2' available on PATH.
+	// +optional
+	Container *dagger.Container,
+
 	// Version (image tag) to use as a markdownlint-cli2 binary source.
 	// +optional
 	// +default="latest"
-	version string,
-
-	// markdownlint-cli2 binary.
-	// +optional
-	binary *dagger.File,
-
-	// Custom container to use as a base container.
-	container *dagger.Container,
+	Version string,
 ) *Markdownlint {
-	if binary == nil {
-		binary = dag.Container().
-			From(fmt.Sprintf("%s:%s", defaultImageRepository, version)).
-			File("/usr/local/bin/markdownlint-cli2")
+	if Container == nil {
+		Container = defaultContainer(Version)
 	}
 
-	container = container.WithFile("/usr/local/bin/markdownlint-cli2", binary, dagger.ContainerWithFileOpts{Permissions: 0755})
-
 	return &Markdownlint{
-		Container: container,
+		Container: Container,
 	}
 }
 
@@ -68,4 +61,13 @@ func (m *Markdownlint) Run(
 			return c
 		}).
 		WithExec(args)
+}
+
+func defaultContainer(version string) *dagger.Container {
+	binary := dag.Container().
+		From(fmt.Sprintf("%s:%s", defaultImageRepository, version)).
+		File("/usr/local/bin/markdownlint-cli2")
+
+	return dag.Container().
+		WithFile("/usr/local/bin/markdownlint-cli2", binary, dagger.ContainerWithFileOpts{Permissions: 0755})
 }
