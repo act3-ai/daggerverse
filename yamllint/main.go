@@ -45,7 +45,7 @@ func (y *Yamllint) Run(ctx context.Context,
 	// flags, without 'yamllint'
 	// +optional
 	extraFlags []string,
-) (string, error) {
+) *dagger.Container {
 	y.Flags = append(y.Flags, extraFlags...)
 
 	// we could support a set of files, in addition to a directory, but
@@ -55,8 +55,7 @@ func (y *Yamllint) Run(ctx context.Context,
 	y.Container = y.Container.WithMountedDirectory(srcPath, src)
 	y.Flags = append(y.Flags, srcPath)
 
-	return y.Container.WithExec(y.Flags).
-		Stdout(ctx)
+	return y.Container.WithExec(y.Flags)
 }
 
 // List YAML files that can be linted.
