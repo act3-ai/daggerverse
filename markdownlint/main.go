@@ -1,10 +1,9 @@
-// A generated module for Markdownlint functions
-//
-// Package inspired by https://github.com/sagikazarmark/daggerverse/blob/main/golangci-lint/main.go.
+// Markdownlint provides utilities for running markdownlint-cli2 without installing locally with npm, brew, or docker. See https://github.com/DavidAnson/markdownlint-cli2 for more info.
 
 package main
 
 import (
+	"context"
 	"dagger/markdownlint/internal/dagger"
 	"fmt"
 )
@@ -14,6 +13,9 @@ const defaultImageRepository = "docker.io/davidanson/markdownlint-cli2"
 
 type Markdownlint struct {
 	Container *dagger.Container
+
+	// +private
+	Flags []string
 }
 
 func New(
@@ -32,35 +34,49 @@ func New(
 
 	return &Markdownlint{
 		Container: Container,
+		Flags:     []string{"markdownlint-cli2"},
 	}
 }
 
-// Run markdownlint-cli2.
-func (m *Markdownlint) Run(
+// Run markdownlint-cli2. Use the dagger native stdout to get the output, or export if the WithFix option was used.
+func (m *Markdownlint) Run(ctx context.Context,
 	// Source directory containing markdown files to be linted.
 	source *dagger.Directory,
 
-	// Custom configuration file.
-	// +optional
-	config *dagger.File,
+	// Glob expressions (from the globby library), for identifying files in source to lint.
+	globs []string,
 
-	// Additional arguments to pass to markdownlint-cli2.
+	// Additional arguments to pass to markdownlint-cli2, without 'markdownlint-cli2' itself.
 	// +optional
 	extraArgs []string,
 ) *dagger.Container {
-	args := []string{"markdownlint-cli2"}
-
+	m.Flags = append(m.Flags, extraArgs...)
 	return m.Container.
 		WithWorkdir("/work/src").
 		WithMountedDirectory(".", source).
-		With(func(c *dagger.Container) *dagger.Container {
-			if config != nil {
-				c = c.WithMountedFile("/work/config", config)
-				args = append(args, "--config", "/work/config")
-			}
-			return c
-		}).
-		WithExec(args)
+		WithExec(m.Flags)
+}
+
+// WithFix updates files to resolve fixable issues (can be overriden in configuration).
+//
+// e.g. 'markdownlint-cli2 --fix'.
+func (m *Markdownlint) WithFix() *Markdownlint {
+	m.Flags = append(m.Flags, "--fix")
+	return m
+}
+
+// Specify a custom configuration file.
+//
+// e.g. 'markdownlint-cli2 --config <config>'.
+func (m *Markdownlint) WithConfig(
+	// Custom configuration file
+	config *dagger.File,
+) *Markdownlint {
+	// we cannot assume the file extension, and resolving it is fruitless
+	cfgPath := ".markdownlint-cli2"
+	m.Container = m.Container.WithMountedFile(cfgPath, config)
+	m.Flags = append(m.Flags, "--config", cfgPath)
+	return m
 }
 
 func defaultContainer(version string) *dagger.Container {
