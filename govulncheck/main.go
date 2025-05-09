@@ -56,7 +56,7 @@ func (gv *Govulncheck) WithNetrc(
 // Run govulncheck with a source directory.
 //
 // e.g. `govulncheck -mode=source`.
-func (gv *Govulncheck) RunWithSource(
+func (gv *Govulncheck) ScanSource(
 	// Go source directory
 	source *dagger.Directory,
 	// file patterns to include,
@@ -73,7 +73,7 @@ func (gv *Govulncheck) RunWithSource(
 // Run govulncheck with a binary.
 //
 // e.g. `govulncheck -mode=binary <binary>`.
-func (gv *Govulncheck) RunWithBinary(
+func (gv *Govulncheck) ScanBinary(
 	// binary file
 	binary *dagger.File,
 ) *dagger.Container {
